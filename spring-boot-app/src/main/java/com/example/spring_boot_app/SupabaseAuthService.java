@@ -59,6 +59,18 @@ public class SupabaseAuthService {
                 .block();
     }
     
+        /**
+     * アクセストークンよりログアウトを行います
+     * @param accessToken アクセストークン
+     */
+    public void logout(String accessToken) {
+        webClient.post()
+            .uri("/auth/v1/logout")
+            .header("Authorization", "Bearer " + accessToken)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+            .block();
+    }    
 
 
 }
