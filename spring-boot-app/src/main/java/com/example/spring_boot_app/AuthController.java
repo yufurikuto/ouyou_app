@@ -1,5 +1,7 @@
 package com.example.spring_boot_app;
 
+import java.io.IOException;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -63,6 +65,18 @@ public class AuthController {
    public ResponseEntity<Map<String, Object>> logout(@RequestHeader("Authorization") String authorizationHeader) {
         supabaseAuthService.logout(authorizationHeader.substring(7));
         return ResponseEntity.ok(Map.of("message", "Logout successful."));
+    }
+
+    /**
+     * Github認証にリダイレクトします
+     * @param response HTTPレスポンス
+     * @param uriBuilder URI構築
+     */
+    @GetMapping("/oauth2/github")
+    public void redirectToGitHub(HttpServletResponse response, UriComponentsBuilder uriBuilder) throws IOException {
+        String redirectTo = uriBuilder.replacePath("/").build().toUriString();
+        String supabaseAuthGitHubUrl = supabaseAuthService.getGitHubSignInUrl(redirectTo);
+        response.sendRedirect(supabaseAuthGitHubUrl);
     }
 
 

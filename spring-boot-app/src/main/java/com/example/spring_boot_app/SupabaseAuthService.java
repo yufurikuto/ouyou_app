@@ -1,5 +1,7 @@
 package com.example.spring_boot_app;
 
+import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -7,11 +9,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import java.util.Map;
 
+
 @Service
 public class SupabaseAuthService {
 
     @Autowired
     private WebClient webClient;
+
+    @Value("${supabase.url}")
+    private String supabaseUrl;
     
     /**
      * Eメール/パスワードを使ってSupabase認証のアカウント登録を行います
@@ -70,6 +76,20 @@ public class SupabaseAuthService {
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
             .block();
+    }    
+
+     /**
+     * SupabaseのGitHub認証を開始するためのURLを取得する
+     * @param redirectTo アカウント認証時にコールバックするリダイレクトURL
+     * @return SupabaseのGitHub認証URL
+     */
+    public String getGitHubSignInUrl(String redirectTo) {
+        return UriComponentsBuilder.fromHttpUrl(this.supabaseUrl)
+                .path("/auth/v1/authorize")
+                .queryParam("provider", "github")
+                .queryParam("redirect_to", redirectTo)
+                .queryParam("scopes", "user:email")
+                .toUriString();
     }    
 
 

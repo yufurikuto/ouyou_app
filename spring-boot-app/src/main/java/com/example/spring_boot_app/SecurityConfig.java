@@ -1,5 +1,7 @@
 package com.example.spring_boot_app;
 
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +17,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    @Autowired
+    private SupabaseAuthFilter supabaseAuthFilter;
 
     /**
      * アプリケーション全体のセキュリティ設定を行います
@@ -30,16 +34,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(withDefaults())
-            .csrf(csrf -> csrf.disable())            
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(
-                        "/", "/*.html", "/*.css", "/*.js", "/favicon.ico","/api/auth/**"
+                        "/", "/*.html", "/*.css", "/*.js", "/favicon.ico"
+                        , "/api/auth/**"
                     ).permitAll()
                 .anyRequest().authenticated()
-            );
+            )
+            // 以下の行のみ追加
+            .addFilterBefore(supabaseAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
+ 
     /**
      * CORS（クロスオリジンリソースシェアリング:他オリジンからのアクセス）の設定を行います
      * - setAllowedOrigins : 許可するオリジン設定
@@ -61,5 +69,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-}
- 
+
+}    
